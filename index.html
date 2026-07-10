@@ -98,9 +98,53 @@
     border:2px solid #e8c2cc;
   }
   .btn-ghost:hover{background:#fdeef1;}
+  .back-btn{
+    position:absolute;
+    top:-20px;
+    left:-14px;
+    background:none;
+    border:none;
+    color:#b08a95;
+    font-size:0.85rem;
+    font-weight:600;
+    cursor:pointer;
+    padding:6px 12px;
+    border-radius:999px;
+    font-family:inherit;
+    z-index:6;
+  }
+  .back-btn:hover{background:#fdeef1;}
+  .dday-badge{
+    position:absolute;
+    top:-20px;
+    right:-14px;
+    background:var(--pink-deep);
+    color:#fff;
+    padding:6px 12px;
+    border-radius:14px;
+    z-index:6;
+    box-shadow:0 4px 12px rgba(255,111,145,0.35);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    line-height:1.2;
+  }
+  .dday-label{
+    font-size:0.6rem;
+    font-weight:600;
+    opacity:0.9;
+    white-space:nowrap;
+  }
+  .dday-value{
+    font-size:0.85rem;
+    font-weight:800;
+  }
   #dieBtn{
-    position:relative;
-    transition:transform 0.15s ease;
+    position:absolute;
+    width:auto;
+    max-width:none;
+    white-space:nowrap;
+    z-index:5;
   }
   .heart-burst{
     position:fixed;
@@ -124,12 +168,27 @@
     color:var(--plum);
     background:#fff;
   }
-  .time-options, .menu-options{
+  .time-options{
     display:flex;
     gap:10px;
     flex-wrap:wrap;
     justify-content:center;
     width:100%;
+  }
+  .menu-options{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    justify-content:center;
+    width:100%;
+  }
+  .custom-menu-row{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    align-items:center;
+    width:100%;
+    margin-top:4px;
   }
   .option-btn{
     border:2px solid #f2c6d1;
@@ -199,6 +258,27 @@
     width:100%;
     align-items:center;
   }
+  #btnRow1{
+    flex-direction:row;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:14px;
+  }
+  .btn-inline{
+    width:auto;
+    max-width:none;
+  }
+  .mascot{
+    width:170px;
+    height:auto;
+    margin-bottom:-8px;
+  }
+  .mascot-accessory{
+    font-size:15px;
+  }
+  .mascot-small .mascot{
+    width:110px;
+  }
 </style>
 </head>
 <body>
@@ -207,15 +287,20 @@
 
   <!-- Screen 1 -->
   <div class="screen active" id="screen1">
+    <div class="dday-badge"><span class="dday-label">청년인턴 수료까지</span><span class="dday-value">D-37</span></div>
+    <div class="mascot-slot" data-accessory="❓"></div>
     <h1>나랑 같이<br>밥먹을래?? 아님 죽을래??</h1>
-    <div class="btn-row">
-      <button class="btn btn-primary" onclick="goTo('screen2')">우리 같이 밥먹자♡</button>
-      <button class="btn btn-ghost" id="dieBtn" onclick="playfulDodge(event)">그냥 죽을래</button>
+    <div class="btn-row" id="btnRow1">
+      <button class="btn btn-primary btn-inline" onclick="goTo('screen2')">우리 같이 밥먹자♥</button>
+      <button class="btn btn-ghost" id="dieBtn">💀 그냥 죽을래</button>
     </div>
   </div>
 
   <!-- Screen 2 -->
   <div class="screen" id="screen2">
+    <button class="back-btn" onclick="goTo('screen1')">← 이전</button>
+    <div class="dday-badge"><span class="dday-label">청년인턴 수료까지</span><span class="dday-value">D-37</span></div>
+    <div class="mascot-slot" data-accessory="💕"></div>
     <h2>잠시만....<br>우리 같이 밥먹는거야??</h2>
     <p>나 진짜 너무 감동이야♡♡</p>
     <button class="btn btn-primary" onclick="goTo('screen3')">같이먹자</button>
@@ -223,6 +308,8 @@
 
   <!-- Screen 3: date/time -->
   <div class="screen" id="screen3">
+    <button class="back-btn" onclick="goTo('screen2')">← 이전</button>
+    <div class="dday-badge"><span class="dday-label">청년인턴 수료까지</span><span class="dday-value">D-37</span></div>
     <h2>그래서 언제 먹을까?</h2>
     <p>날짜랑 시간을 골라줘</p>
     <input type="date" id="dateInput" min="2026-07-10" onchange="updatePreview()">
@@ -231,24 +318,34 @@
       <button class="option-btn" data-time="저녁" onclick="selectTime(this)">저녁</button>
     </div>
     <div class="preview-line" id="previewLine">날짜와 시간을 골라줘!</div>
-    <input type="text" class="place-input" id="placeInput" placeholder="만나고 싶은 장소 (선택, 나중에 정해도 돼!)">
     <button class="btn btn-primary" id="confirmDateBtn" onclick="goTo('screen4')" disabled>이 날이 좋아!</button>
   </div>
 
   <!-- Screen 4: menu -->
   <div class="screen" id="screen4">
+    <button class="back-btn" onclick="goTo('screen3')">← 이전</button>
+    <div class="dday-badge"><span class="dday-label">청년인턴 수료까지</span><span class="dday-value">D-37</span></div>
     <h2>그래! 이 날 뭐 먹을까?</h2>
     <p>우리 함께라면 뭐든 좋아!</p>
     <div class="menu-options">
-      <button class="option-btn" onclick="selectMenu('고기')">고기</button>
-      <button class="option-btn" onclick="selectMenu('양식')">양식</button>
-      <button class="option-btn" onclick="selectMenu('중식')">중식</button>
-      <button class="option-btn" onclick="selectMenu('카페')">카페</button>
+      <button class="option-btn" onclick="selectMenu('한식')">#한식</button>
+      <button class="option-btn" onclick="selectMenu('중식')">#중식</button>
+      <button class="option-btn" onclick="selectMenu('일식')">#일식</button>
+      <button class="option-btn" onclick="selectMenu('양식')">#양식</button>
+      <button class="option-btn" onclick="selectMenu('분식')">#분식</button>
+      <button class="option-btn" onclick="selectMenu('패스트푸드')">#패스트푸드</button>
+      <button class="option-btn" onclick="selectMenu('아무거나')">#아무거나</button>
+    </div>
+    <div class="custom-menu-row">
+      <input type="text" id="customMenuInput" class="place-input" placeholder="먹고 싶은 거 직접 적어줘!" onkeydown="if(event.key==='Enter') selectCustomMenu()">
+      <button class="btn btn-primary" onclick="selectCustomMenu()">이걸로 할래!</button>
     </div>
   </div>
 
   <!-- Screen 5: final message + card -->
   <div class="screen" id="screen5">
+    <button class="back-btn" onclick="goTo('screen4')">← 이전</button>
+    <div class="dday-badge"><span class="dday-label">청년인턴 수료까지</span><span class="dday-value">D-37</span></div>
     <h2>같이 먹으러 가줘서<br>너무 좋다</h2>
     <p>내가 연락할게!</p>
     <div class="card" id="promiseCard">
@@ -256,10 +353,9 @@
       <div class="card-row"><span class="card-label">날짜</span><span class="card-value" id="cardDate">-</span></div>
       <div class="card-row"><span class="card-label">시간</span><span class="card-value" id="cardTime">-</span></div>
       <div class="card-row"><span class="card-label">메뉴</span><span class="card-value" id="cardMenu">-</span></div>
-      <div class="card-row"><span class="card-label">장소</span><span class="card-value" id="cardPlace">-</span></div>
     </div>
     <div class="btn-row">
-      <button class="btn btn-primary" onclick="saveAndShare()">이미지 저장해서 답장 보내기</button>
+      <button class="btn btn-primary" onclick="saveAndShare()">약속 공유하기</button>
       <button class="btn btn-ghost" onclick="resetAll()">처음으로 돌아가기</button>
     </div>
   </div>
@@ -276,28 +372,169 @@
   }
 
   // 장난스러운 "그냥 죽을래" 버튼 도망 효과
-  function playfulDodge(e){
-    const btn = e.target;
-    const appRect = btn.closest('.app').getBoundingClientRect();
-    const maxX = appRect.width - btn.offsetWidth - 20;
-    const maxY = 40;
-    const randX = (Math.random() - 0.5) * 2 * maxX * 0.4;
-    const randY = (Math.random() - 0.5) * 2 * maxY;
-    btn.style.position = 'relative';
-    btn.style.left = randX + 'px';
-    btn.style.top = randY + 'px';
+  const dieBtn = document.getElementById('dieBtn');
 
-    // 하트 이펙트
+  function placeDieBtnInitial(){
+    const screen1 = document.getElementById('screen1');
+    const sRect = screen1.getBoundingClientRect();
+    const primaryBtn = screen1.querySelector('.btn-primary');
+    const pRect = primaryBtn.getBoundingClientRect();
+    const bRect = dieBtn.getBoundingClientRect();
+
+    // 밥먹자 버튼 아래, 여백을 두고 배치 (가운데 정렬)
+    let left = (pRect.left - sRect.left) + (pRect.width - bRect.width) / 2;
+    let top = (pRect.bottom - sRect.top) + 36;
+
+    const maxLeft = sRect.width - bRect.width - 10;
+    left = Math.min(Math.max(left, 10), Math.max(maxLeft, 10));
+
+    dieBtn.style.left = left + 'px';
+    dieBtn.style.top = top + 'px';
+  }
+
+  function spawnHearts(x, y){
     for(let i=0;i<3;i++){
       const heart = document.createElement('div');
       heart.className = 'heart-burst';
       heart.textContent = '💗';
-      heart.style.left = (e.clientX + (Math.random()-0.5)*40) + 'px';
-      heart.style.top = (e.clientY) + 'px';
+      heart.style.left = (x + (Math.random()-0.5)*40) + 'px';
+      heart.style.top = y + 'px';
       document.body.appendChild(heart);
       setTimeout(()=> heart.remove(), 1400);
     }
   }
+
+  function dodgeDieBtn(pointerX, pointerY){
+    const screen1 = document.getElementById('screen1');
+    const sRect = screen1.getBoundingClientRect();
+    const bRect = dieBtn.getBoundingClientRect();
+    const padding = 8;
+    const maxLeft = Math.max(sRect.width - bRect.width - padding*2, 0);
+    const maxTop = Math.max(sRect.height - bRect.height - padding*2, 0);
+
+    // 현재 버튼 중심 (스크린 기준 좌표)
+    const curCx = (bRect.left - sRect.left) + bRect.width/2;
+    const curCy = (bRect.top - sRect.top) + bRect.height/2;
+    const pointerRelX = pointerX - sRect.left;
+    const pointerRelY = pointerY - sRect.top;
+
+    // 마우스가 다가온 반대 방향 벡터
+    let dx = curCx - pointerRelX;
+    let dy = curCy - pointerRelY;
+    let dist = Math.hypot(dx, dy);
+    if(dist < 1){
+      const angle = Math.random() * Math.PI * 2;
+      dx = Math.cos(angle);
+      dy = Math.sin(angle);
+      dist = 1;
+    }
+    dx /= dist;
+    dy /= dist;
+
+    const escapeDistance = 140 + Math.random()*60;
+    let targetCx = curCx + dx * escapeDistance;
+    let targetCy = curCy + dy * escapeDistance;
+
+    let newLeft = targetCx - bRect.width/2;
+    let newTop = targetCy - bRect.height/2;
+
+    // 화면 밖으로 나가면 반대쪽 여백으로 보정
+    if(newLeft < padding || newLeft > padding + maxLeft){
+      newLeft = Math.random()*maxLeft + padding;
+    }
+    if(newTop < padding || newTop > padding + maxTop){
+      newTop = Math.random()*maxTop + padding;
+    }
+    newLeft = Math.min(Math.max(newLeft, padding), padding + maxLeft);
+    newTop = Math.min(Math.max(newTop, padding), padding + maxTop);
+
+    dieBtn.style.left = newLeft + 'px';
+    dieBtn.style.top = newTop + 'px';
+    spawnHearts(pointerX, pointerY);
+  }
+
+  function checkProximity(clientX, clientY){
+    if(!document.getElementById('screen1').classList.contains('active')) return;
+    const bRect = dieBtn.getBoundingClientRect();
+    const margin = 6; // 버튼 가장자리에서 살짝만 여유
+    const touching = clientX > bRect.left - margin && clientX < bRect.right + margin &&
+                      clientY > bRect.top - margin && clientY < bRect.bottom + margin;
+    if(touching){
+      dodgeDieBtn(clientX, clientY);
+    }
+  }
+
+  document.addEventListener('mousemove', (e) => checkProximity(e.clientX, e.clientY));
+  document.addEventListener('touchstart', (e) => {
+    const t = e.touches[0];
+    if(t) checkProximity(t.clientX, t.clientY);
+  }, {passive:true});
+  document.addEventListener('touchmove', (e) => {
+    const t = e.touches[0];
+    if(t) checkProximity(t.clientX, t.clientY);
+  }, {passive:true});
+
+  function mascotDuoSVG(accessory){
+    return `
+<svg class="mascot" viewBox="0 0 190 100" xmlns="http://www.w3.org/2000/svg">
+  <g>
+    <path d="M28 66 Q20 18 53 18 Q86 18 78 66 Q78 92 53 92 Q28 92 28 66 Z" fill="#f4a261"/>
+    <ellipse cx="32" cy="24" rx="7" ry="10" fill="#f4a261"/>
+    <ellipse cx="74" cy="24" rx="7" ry="10" fill="#f4a261"/>
+    <path d="M53 18 C58 6 66 2 72 4" stroke="#5b2a3a" stroke-width="2" fill="none"/>
+    <polygon points="72,4 76,0 80,4 76,8" fill="#ffd166"/>
+    <rect x="40" y="46" width="6" height="15" rx="3" fill="#5b2a3a"/>
+    <rect x="60" y="46" width="6" height="15" rx="3" fill="#5b2a3a"/>
+    <circle cx="38" cy="63" r="6.5" fill="#ff8fa3" opacity="0.55"/>
+    <circle cx="68" cy="63" r="6.5" fill="#ff8fa3" opacity="0.55"/>
+    <ellipse cx="18" cy="70" rx="8" ry="13" fill="#f4a261" transform="rotate(-20 18 70)"/>
+    <ellipse cx="88" cy="70" rx="8" ry="13" fill="#f4a261" transform="rotate(20 88 70)"/>
+    <ellipse cx="40" cy="94" rx="9" ry="7" fill="#f4a261"/>
+    <ellipse cx="66" cy="94" rx="9" ry="7" fill="#f4a261"/>
+  </g>
+  <g transform="translate(88,0)">
+    <path d="M28 66 Q20 18 53 18 Q86 18 78 66 Q78 92 53 92 Q28 92 28 66 Z" fill="#ffb3c6"/>
+    <ellipse cx="32" cy="24" rx="7" ry="10" fill="#ffb3c6"/>
+    <ellipse cx="74" cy="24" rx="7" ry="10" fill="#ffb3c6"/>
+    <path d="M53 18 C48 6 40 2 34 4" stroke="#5b2a3a" stroke-width="2" fill="none"/>
+    <polygon points="34,4 30,0 26,4 30,8" fill="#ffd166"/>
+    <path d="M44 12 Q53 6 62 12 Q62 18 53 18 Q44 18 44 12 Z" fill="#a8c0ff"/>
+    <rect x="40" y="46" width="6" height="15" rx="3" fill="#5b2a3a"/>
+    <rect x="60" y="46" width="6" height="15" rx="3" fill="#5b2a3a"/>
+    <circle cx="38" cy="63" r="6.5" fill="#ff6f91" opacity="0.55"/>
+    <circle cx="68" cy="63" r="6.5" fill="#ff6f91" opacity="0.55"/>
+    <ellipse cx="18" cy="70" rx="8" ry="13" fill="#ffb3c6" transform="rotate(-20 18 70)"/>
+    <ellipse cx="88" cy="70" rx="8" ry="13" fill="#ffb3c6" transform="rotate(20 88 70)"/>
+    <ellipse cx="40" cy="94" rx="9" ry="7" fill="#ffb3c6"/>
+    <ellipse cx="66" cy="94" rx="9" ry="7" fill="#ffb3c6"/>
+  </g>
+  ${accessory ? `<text x="95" y="14" text-anchor="middle" class="mascot-accessory">${accessory}</text>` : ''}
+</svg>`;
+  }
+
+  function renderMascots(){
+    document.querySelectorAll('.mascot-slot').forEach(slot => {
+      slot.innerHTML = mascotDuoSVG(slot.dataset.accessory || '');
+    });
+  }
+
+  function updateDday(){
+    const target = new Date(2026, 7, 17); // 2026년 8월 17일 (월 인덱스는 0부터 시작)
+    const now = new Date();
+    const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const diffDays = Math.round((target - todayMidnight) / 86400000);
+
+    let text;
+    if(diffDays > 0) text = `D-${diffDays}`;
+    else if(diffDays === 0) text = 'D-DAY';
+    else text = `D+${Math.abs(diffDays)}`;
+
+    document.querySelectorAll('.dday-value').forEach(el => el.textContent = text);
+  }
+
+  window.addEventListener('load', updateDday);
+  window.addEventListener('load', renderMascots);
+  window.addEventListener('load', placeDieBtnInitial);
 
   function selectTime(btn){
     document.querySelectorAll('.time-options .option-btn').forEach(b => b.classList.remove('selected'));
@@ -327,6 +564,16 @@
     }
   }
 
+  function selectCustomMenu(){
+    const input = document.getElementById('customMenuInput');
+    const val = input.value.trim();
+    if(!val){
+      alert('뭐 먹고 싶은지 적어줘!');
+      return;
+    }
+    selectMenu(val);
+  }
+
   function selectMenu(menu){
     selectedMenu = menu;
     fillCard();
@@ -337,12 +584,9 @@
     const dateVal = document.getElementById('dateInput').value;
     const d = new Date(dateVal + 'T00:00:00');
     const dateText = `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일 (${days[d.getDay()]})`;
-    const place = document.getElementById('placeInput').value.trim();
-
     document.getElementById('cardDate').textContent = dateText;
     document.getElementById('cardTime').textContent = selectedTime;
     document.getElementById('cardMenu').textContent = selectedMenu;
-    document.getElementById('cardPlace').textContent = place ? place : '나중에 정하자 ♡';
   }
 
   async function saveAndShare(){
@@ -376,14 +620,12 @@
   function resetAll(){
     document.getElementById('dateInput').value = '';
     document.querySelectorAll('.time-options .option-btn').forEach(b => b.classList.remove('selected'));
-    document.getElementById('placeInput').value = '';
     document.getElementById('previewLine').textContent = '날짜와 시간을 골라줘!';
     document.getElementById('confirmDateBtn').disabled = true;
     selectedTime = null;
     selectedMenu = null;
-    document.getElementById('dieBtn').style.left = '0px';
-    document.getElementById('dieBtn').style.top = '0px';
     goTo('screen1');
+    placeDieBtnInitial();
   }
 </script>
 </body>
