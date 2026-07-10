@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>나랑 같이 밥먹을래?</title>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<style>
+  :root{
+    --pink-deep: #ff6f91;
+    --pink-mid: #ffb3c6;
+    --pink-light: #fff0f3;
+    --cream: #fffaf7;
+    --plum: #5b2a3a;
+    --gold: #f4a261;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    min-height:100vh;
+    font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+    background:linear-gradient(160deg, var(--pink-light) 0%, var(--pink-mid) 55%, var(--pink-deep) 100%);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    color:var(--plum);
+    overflow-x:hidden;
+  }
+  .app{
+    width:100%;
+    max-width:420px;
+    background:var(--cream);
+    border-radius:28px;
+    box-shadow:0 20px 60px rgba(91,42,58,0.25);
+    padding:36px 28px;
+    position:relative;
+    overflow:hidden;
+    min-height:520px;
+    display:flex;
+    flex-direction:column;
+  }
+  .app::before{
+    content:"";
+    position:absolute;
+    top:-60px; right:-60px;
+    width:160px; height:160px;
+    background:radial-gradient(circle, var(--pink-mid) 0%, transparent 70%);
+    opacity:0.6;
+  }
+  .screen{
+    display:none;
+    flex-direction:column;
+    align-items:center;
+    text-align:center;
+    gap:18px;
+    flex:1;
+    justify-content:center;
+    animation:fadeIn 0.5s ease;
+    position:relative;
+    z-index:1;
+  }
+  .screen.active{display:flex;}
+  @keyframes fadeIn{
+    from{opacity:0; transform:translateY(10px);}
+    to{opacity:1; transform:translateY(0);}
+  }
+  h1,h2{
+    margin:0;
+    line-height:1.4;
+    font-weight:800;
+  }
+  h1{font-size:1.5rem; color:var(--plum);}
+  h2{font-size:1.3rem; color:var(--pink-deep);}
+  p{margin:0; font-size:1rem; color:#8a5a68; line-height:1.6;}
+  .btn{
+    border:none;
+    border-radius:999px;
+    padding:16px 28px;
+    font-size:1rem;
+    font-weight:700;
+    cursor:pointer;
+    width:100%;
+    max-width:280px;
+    transition:transform 0.15s ease, box-shadow 0.15s ease;
+    font-family:inherit;
+  }
+  .btn:active{transform:scale(0.96);}
+  .btn-primary{
+    background:var(--pink-deep);
+    color:#fff;
+    box-shadow:0 8px 20px rgba(255,111,145,0.4);
+  }
+  .btn-primary:hover{box-shadow:0 10px 26px rgba(255,111,145,0.55); transform:translateY(-2px);}
+  .btn-ghost{
+    background:transparent;
+    color:#b08a95;
+    border:2px solid #e8c2cc;
+  }
+  .btn-ghost:hover{background:#fdeef1;}
+  #dieBtn{
+    position:relative;
+    transition:transform 0.15s ease;
+  }
+  .heart-burst{
+    position:fixed;
+    font-size:1.4rem;
+    pointer-events:none;
+    animation:floatUp 1.4s ease-out forwards;
+    z-index:999;
+  }
+  @keyframes floatUp{
+    0%{opacity:1; transform:translateY(0) scale(1);}
+    100%{opacity:0; transform:translateY(-120px) scale(1.4);}
+  }
+  input[type="date"]{
+    width:100%;
+    max-width:280px;
+    padding:12px 16px;
+    border-radius:14px;
+    border:2px solid #f2c6d1;
+    font-size:1rem;
+    font-family:inherit;
+    color:var(--plum);
+    background:#fff;
+  }
+  .time-options, .menu-options{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    justify-content:center;
+    width:100%;
+  }
+  .option-btn{
+    border:2px solid #f2c6d1;
+    background:#fff;
+    color:var(--plum);
+    padding:12px 18px;
+    border-radius:14px;
+    font-size:0.95rem;
+    font-weight:600;
+    cursor:pointer;
+    font-family:inherit;
+    transition:all 0.15s ease;
+  }
+  .option-btn.selected{
+    background:var(--pink-deep);
+    color:#fff;
+    border-color:var(--pink-deep);
+  }
+  .preview-line{
+    font-size:1.1rem;
+    font-weight:700;
+    color:var(--pink-deep);
+    min-height:1.6rem;
+  }
+  .place-input{
+    width:100%;
+    max-width:280px;
+    padding:12px 16px;
+    border-radius:14px;
+    border:2px solid #f2c6d1;
+    font-size:0.95rem;
+    font-family:inherit;
+    color:var(--plum);
+  }
+  .place-input::placeholder{color:#c9a2ad;}
+  .card{
+    width:100%;
+    max-width:300px;
+    background:linear-gradient(145deg,#fff 0%, #fff0f3 100%);
+    border:2px solid var(--pink-mid);
+    border-radius:22px;
+    padding:26px 22px;
+    text-align:left;
+    box-shadow:0 12px 30px rgba(255,111,145,0.25);
+  }
+  .card-title{
+    font-size:1.15rem;
+    font-weight:800;
+    color:var(--pink-deep);
+    text-align:center;
+    margin-bottom:16px;
+  }
+  .card-row{
+    display:flex;
+    justify-content:space-between;
+    padding:8px 0;
+    border-bottom:1px dashed #f0cdd6;
+    font-size:0.95rem;
+  }
+  .card-row:last-child{border-bottom:none;}
+  .card-label{color:#b08a95; font-weight:600;}
+  .card-value{color:var(--plum); font-weight:700;}
+  .btn-row{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    width:100%;
+    align-items:center;
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- Screen 1 -->
+  <div class="screen active" id="screen1">
+    <h1>나랑 같이<br>밥먹을래?? 아님 죽을래??</h1>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="goTo('screen2')">우리 같이 밥먹자♡</button>
+      <button class="btn btn-ghost" id="dieBtn" onclick="playfulDodge(event)">그냥 죽을래</button>
+    </div>
+  </div>
+
+  <!-- Screen 2 -->
+  <div class="screen" id="screen2">
+    <h2>잠시만....<br>우리 같이 밥먹는거야??</h2>
+    <p>나 진짜 너무 감동이야♡♡</p>
+    <button class="btn btn-primary" onclick="goTo('screen3')">같이먹자</button>
+  </div>
+
+  <!-- Screen 3: date/time -->
+  <div class="screen" id="screen3">
+    <h2>그래서 언제 먹을까?</h2>
+    <p>날짜랑 시간을 골라줘</p>
+    <input type="date" id="dateInput" min="2026-07-10" onchange="updatePreview()">
+    <div class="time-options">
+      <button class="option-btn" data-time="점심" onclick="selectTime(this)">점심</button>
+      <button class="option-btn" data-time="저녁" onclick="selectTime(this)">저녁</button>
+    </div>
+    <div class="preview-line" id="previewLine">날짜와 시간을 골라줘!</div>
+    <input type="text" class="place-input" id="placeInput" placeholder="만나고 싶은 장소 (선택, 나중에 정해도 돼!)">
+    <button class="btn btn-primary" id="confirmDateBtn" onclick="goTo('screen4')" disabled>이 날이 좋아!</button>
+  </div>
+
+  <!-- Screen 4: menu -->
+  <div class="screen" id="screen4">
+    <h2>그래! 이 날 뭐 먹을까?</h2>
+    <p>우리 함께라면 뭐든 좋아!</p>
+    <div class="menu-options">
+      <button class="option-btn" onclick="selectMenu('고기')">고기</button>
+      <button class="option-btn" onclick="selectMenu('양식')">양식</button>
+      <button class="option-btn" onclick="selectMenu('중식')">중식</button>
+      <button class="option-btn" onclick="selectMenu('카페')">카페</button>
+    </div>
+  </div>
+
+  <!-- Screen 5: final message + card -->
+  <div class="screen" id="screen5">
+    <h2>같이 먹으러 가줘서<br>너무 좋다</h2>
+    <p>내가 연락할게!</p>
+    <div class="card" id="promiseCard">
+      <div class="card-title">우리의 밥 약속 💕</div>
+      <div class="card-row"><span class="card-label">날짜</span><span class="card-value" id="cardDate">-</span></div>
+      <div class="card-row"><span class="card-label">시간</span><span class="card-value" id="cardTime">-</span></div>
+      <div class="card-row"><span class="card-label">메뉴</span><span class="card-value" id="cardMenu">-</span></div>
+      <div class="card-row"><span class="card-label">장소</span><span class="card-value" id="cardPlace">-</span></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="saveAndShare()">이미지 저장해서 답장 보내기</button>
+      <button class="btn btn-ghost" onclick="resetAll()">처음으로 돌아가기</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let selectedTime = null;
+  let selectedMenu = null;
+
+  function goTo(id){
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  // 장난스러운 "그냥 죽을래" 버튼 도망 효과
+  function playfulDodge(e){
+    const btn = e.target;
+    const appRect = btn.closest('.app').getBoundingClientRect();
+    const maxX = appRect.width - btn.offsetWidth - 20;
+    const maxY = 40;
+    const randX = (Math.random() - 0.5) * 2 * maxX * 0.4;
+    const randY = (Math.random() - 0.5) * 2 * maxY;
+    btn.style.position = 'relative';
+    btn.style.left = randX + 'px';
+    btn.style.top = randY + 'px';
+
+    // 하트 이펙트
+    for(let i=0;i<3;i++){
+      const heart = document.createElement('div');
+      heart.className = 'heart-burst';
+      heart.textContent = '💗';
+      heart.style.left = (e.clientX + (Math.random()-0.5)*40) + 'px';
+      heart.style.top = (e.clientY) + 'px';
+      document.body.appendChild(heart);
+      setTimeout(()=> heart.remove(), 1400);
+    }
+  }
+
+  function selectTime(btn){
+    document.querySelectorAll('.time-options .option-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedTime = btn.dataset.time;
+    updatePreview();
+  }
+
+  const days = ['일요일','월요일','화요일','수요일','목요일','금요일','토요일'];
+
+  function updatePreview(){
+    const dateVal = document.getElementById('dateInput').value;
+    const preview = document.getElementById('previewLine');
+    const confirmBtn = document.getElementById('confirmDateBtn');
+
+    if(dateVal && selectedTime){
+      const d = new Date(dateVal + 'T00:00:00');
+      const text = `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일 ${days[d.getDay()]} ${selectedTime}`;
+      preview.textContent = text;
+      confirmBtn.disabled = false;
+    } else if(dateVal){
+      preview.textContent = '점심/저녁 중 하나를 골라줘!';
+      confirmBtn.disabled = true;
+    } else {
+      preview.textContent = '날짜와 시간을 골라줘!';
+      confirmBtn.disabled = true;
+    }
+  }
+
+  function selectMenu(menu){
+    selectedMenu = menu;
+    fillCard();
+    goTo('screen5');
+  }
+
+  function fillCard(){
+    const dateVal = document.getElementById('dateInput').value;
+    const d = new Date(dateVal + 'T00:00:00');
+    const dateText = `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일 (${days[d.getDay()]})`;
+    const place = document.getElementById('placeInput').value.trim();
+
+    document.getElementById('cardDate').textContent = dateText;
+    document.getElementById('cardTime').textContent = selectedTime;
+    document.getElementById('cardMenu').textContent = selectedMenu;
+    document.getElementById('cardPlace').textContent = place ? place : '나중에 정하자 ♡';
+  }
+
+  async function saveAndShare(){
+    const card = document.getElementById('promiseCard');
+    const canvas = await html2canvas(card, {backgroundColor: '#fffaf7', scale: 2});
+
+    canvas.toBlob(async (blob) => {
+      const file = new File([blob], 'date-promise.png', {type: 'image/png'});
+
+      if(navigator.canShare && navigator.canShare({files:[file]})){
+        try{
+          await navigator.share({
+            files: [file],
+            title: '우리의 밥 약속',
+            text: '우리 이 날 밥 먹기로 했어요 💕'
+          });
+          return;
+        }catch(err){
+          // 사용자가 공유를 취소한 경우 등 -> 아래 다운로드로 진행
+        }
+      }
+      // 공유 API 미지원 브라우저 -> 이미지 다운로드
+      const link = document.createElement('a');
+      link.download = 'date-promise.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      alert('이미지가 저장됐어! 카톡/문자로 보내줘 💌');
+    }, 'image/png');
+  }
+
+  function resetAll(){
+    document.getElementById('dateInput').value = '';
+    document.querySelectorAll('.time-options .option-btn').forEach(b => b.classList.remove('selected'));
+    document.getElementById('placeInput').value = '';
+    document.getElementById('previewLine').textContent = '날짜와 시간을 골라줘!';
+    document.getElementById('confirmDateBtn').disabled = true;
+    selectedTime = null;
+    selectedMenu = null;
+    document.getElementById('dieBtn').style.left = '0px';
+    document.getElementById('dieBtn').style.top = '0px';
+    goTo('screen1');
+  }
+</script>
+</body>
+</html>
