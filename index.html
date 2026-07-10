@@ -599,8 +599,7 @@
       if(navigator.canShare && navigator.canShare({files:[file]})){
         try{
           await navigator.share({
-            files: [file],
-            title: '우리의 밥 약속'
+            files: [file]
           });
           return;
         }catch(err){
