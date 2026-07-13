@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>나랑 같이 밥먹을래?</title>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=dd47f8ec67f3912283516bd732223c41&libraries=services"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{
     --pink-deep: #ff6f91;
@@ -224,6 +226,84 @@
     color:var(--plum);
   }
   .place-input::placeholder{color:#c9a2ad;}
+  .place-results{
+    width:100%;
+    max-width:280px;
+    max-height:180px;
+    overflow-y:auto;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+  .place-result-item{
+    text-align:left;
+    background:#fff;
+    border:2px solid #f2c6d1;
+    border-radius:14px;
+    padding:10px 14px;
+    cursor:pointer;
+    transition:all 0.15s ease;
+  }
+  .place-result-item:hover{
+    background:#fdeef1;
+    border-color:var(--pink-deep);
+  }
+  .place-result-name{
+    font-weight:700;
+    font-size:0.9rem;
+    color:var(--plum);
+  }
+  .place-result-address{
+    font-size:0.75rem;
+    color:#b08a95;
+    margin-top:2px;
+  }
+  .visited-badge{
+    font-size:0.7rem;
+    font-weight:700;
+    color:#4caf7d;
+    background:#e6f6ee;
+    padding:2px 8px;
+    border-radius:999px;
+    margin-left:4px;
+  }
+  .place-empty{
+    font-size:0.85rem;
+    color:#c9a2ad;
+  }
+  .hidden{
+    display:none !important;
+  }
+  #restaurantListWrap{
+    width:100%;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:10px;
+  }
+  .back-link{
+    background:none;
+    border:none;
+    color:#b08a95;
+    font-size:0.8rem;
+    font-weight:600;
+    text-decoration:underline;
+    cursor:pointer;
+    font-family:inherit;
+    padding:2px;
+  }
+  .archive-link{
+    position:absolute;
+    top:-20px;
+    left:50%;
+    transform:translateX(-50%);
+    z-index:6;
+    white-space:nowrap;
+  }
+  .place-result-item.selected-place{
+    border-color:var(--pink-deep);
+    background:#fdeef1;
+  }
   .card{
     width:100%;
     max-width:300px;
@@ -251,6 +331,97 @@
   .card-row:last-child{border-bottom:none;}
   .card-label{color:#b08a95; font-weight:600;}
   .card-value{color:var(--plum); font-weight:700;}
+  .archive-list{
+    width:100%;
+    max-width:300px;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+    max-height:340px;
+    overflow-y:auto;
+    padding-right:2px;
+  }
+  .archive-card{
+    background:linear-gradient(145deg,#fff 0%, #fff0f3 100%);
+    border:2px solid var(--pink-mid);
+    border-radius:18px;
+    padding:16px 18px;
+    text-align:left;
+    box-shadow:0 6px 16px rgba(255,111,145,0.18);
+  }
+  .archive-card-title{
+    font-size:0.95rem;
+    font-weight:800;
+    color:var(--pink-deep);
+    margin-bottom:8px;
+  }
+  .archive-card-row{
+    display:flex;
+    justify-content:space-between;
+    padding:4px 0;
+    font-size:0.85rem;
+  }
+  .share-btn{
+    margin-top:8px;
+    width:100%;
+    padding:8px 10px;
+    font-size:0.8rem;
+  }
+  .highlighted-card{
+    animation:cardGlow 1.2s ease-in-out 2;
+  }
+  @keyframes cardGlow{
+    0%, 100%{ box-shadow:0 6px 16px rgba(255,111,145,0.18); border-color:var(--pink-mid); }
+    50%{ box-shadow:0 0 0 6px rgba(255,111,145,0.35); border-color:var(--pink-deep); }
+  }
+  .participants-row{
+    margin-top:10px;
+    font-size:0.78rem;
+    color:var(--plum);
+    font-weight:600;
+  }
+  .participants-empty{
+    color:#c9a2ad;
+    font-weight:400;
+  }
+  .join-btn{
+    margin-top:8px;
+    width:100%;
+    padding:8px 10px;
+    font-size:0.8rem;
+  }
+  .cancel-btn{
+    margin-top:8px;
+    width:100%;
+    padding:8px 10px;
+    font-size:0.78rem;
+    color:#c0607a;
+    border-color:#f0cdd6;
+  }
+  .ranking-box{
+    width:100%;
+    max-width:300px;
+    background:linear-gradient(135deg,#fff0f3 0%, #ffe0e9 100%);
+    border:2px solid var(--pink-mid);
+    border-radius:16px;
+    padding:14px 18px;
+    margin-bottom:4px;
+  }
+  .ranking-title{
+    font-weight:800;
+    color:var(--pink-deep);
+    font-size:0.9rem;
+    text-align:center;
+    margin-bottom:8px;
+  }
+  .ranking-row{
+    display:flex;
+    justify-content:space-between;
+    font-size:0.85rem;
+    color:var(--plum);
+    padding:2px 0;
+    font-weight:600;
+  }
   .btn-row{
     display:flex;
     flex-direction:column;
@@ -294,6 +465,16 @@
       <button class="btn btn-primary btn-inline" onclick="goTo('screen2')">우리 같이 밥먹자♥</button>
       <button class="btn btn-ghost" id="dieBtn">💀 그냥 죽을래</button>
     </div>
+    <button class="back-link archive-link" onclick="goTo('screenArchive'); loadArchive();">📖 우리의 약속 서랍 보기</button>
+  </div>
+
+  <!-- Screen Archive: 저장된 약속 모음집 -->
+  <div class="screen" id="screenArchive">
+    <button class="back-btn" onclick="goTo('screen1')">← 이전</button>
+    <h2>우리의 약속 서랍 💌</h2>
+    <p>우리가 정했던 약속들이야</p>
+    <div id="rankingBox" class="ranking-box hidden"></div>
+    <div id="archiveList" class="archive-list"></div>
   </div>
 
   <!-- Screen 2 -->
@@ -318,41 +499,42 @@
       <button class="option-btn" data-time="저녁" onclick="selectTime(this)">저녁</button>
     </div>
     <div class="preview-line" id="previewLine">날짜와 시간을 골라줘!</div>
-    <button class="btn btn-primary" id="confirmDateBtn" onclick="goTo('screen4')" disabled>이 날이 좋아!</button>
+    <button class="btn btn-primary" id="confirmDateBtn" onclick="goTo('screenPlace')" disabled>이 날이 좋아!</button>
   </div>
 
-  <!-- Screen 4: menu -->
-  <div class="screen" id="screen4">
+  <!-- Screen Place: 카테고리 -> 음식점 리스트 -> 카카오맵 확인 -->
+  <div class="screen" id="screenPlace">
     <button class="back-btn" onclick="goTo('screen3')">← 이전</button>
     <div class="dday-badge"><span class="dday-label">청년인턴 수료까지</span><span class="dday-value">D-37</span></div>
-    <h2>그래! 이 날 뭐 먹을까?</h2>
-    <p>우리 함께라면 뭐든 좋아!</p>
-    <div class="menu-options">
-      <button class="option-btn" onclick="selectMenu('한식')">#한식</button>
-      <button class="option-btn" onclick="selectMenu('중식')">#중식</button>
-      <button class="option-btn" onclick="selectMenu('일식')">#일식</button>
-      <button class="option-btn" onclick="selectMenu('양식')">#양식</button>
-      <button class="option-btn" onclick="selectMenu('분식')">#분식</button>
-      <button class="option-btn" onclick="selectMenu('패스트푸드')">#패스트푸드</button>
-      <button class="option-btn" onclick="selectMenu('아무거나')">#아무거나</button>
+    <h2 id="placeStepTitle">뭐 먹을지 골랐으니,<br>어디서 먹을까?</h2>
+    <p id="placeStepDesc">카테고리를 골라줘!</p>
+
+    <div class="menu-options" id="placeCategoryList">
+      <span class="place-empty">불러오는 중...</span>
     </div>
-    <div class="custom-menu-row">
-      <input type="text" id="customMenuInput" class="place-input" placeholder="먹고 싶은 거 직접 적어줘!" onkeydown="if(event.key==='Enter') selectCustomMenu()">
-      <button class="btn btn-primary" onclick="selectCustomMenu()">이걸로 할래!</button>
+
+    <div id="restaurantListWrap" class="hidden">
+      <button class="back-link" onclick="showCategoryList()">← 카테고리 다시 선택</button>
+      <div id="restaurantList" class="place-results"></div>
     </div>
+
+    <button class="btn btn-primary hidden" id="confirmPlaceBtn" onclick="confirmPlace()">이 장소로 할래!</button>
+    <button class="btn btn-ghost" onclick="skipPlace()">장소는 나중에 정할래</button>
   </div>
 
   <!-- Screen 5: final message + card -->
   <div class="screen" id="screen5">
-    <button class="back-btn" onclick="goTo('screen4')">← 이전</button>
+    <button class="back-btn" onclick="goTo('screenPlace')">← 이전</button>
     <div class="dday-badge"><span class="dday-label">청년인턴 수료까지</span><span class="dday-value">D-37</span></div>
     <h2>같이 먹으러 가줘서<br>너무 좋다</h2>
     <p>내가 연락할게!</p>
     <div class="card" id="promiseCard">
       <div class="card-title">우리의 밥 약속 💕</div>
+      <div class="card-row"><span class="card-label">이름</span><span class="card-value" id="cardName">-</span></div>
       <div class="card-row"><span class="card-label">날짜</span><span class="card-value" id="cardDate">-</span></div>
       <div class="card-row"><span class="card-label">시간</span><span class="card-value" id="cardTime">-</span></div>
       <div class="card-row"><span class="card-label">메뉴</span><span class="card-value" id="cardMenu">-</span></div>
+      <div class="card-row"><span class="card-label">장소</span><span class="card-value" id="cardPlace">-</span></div>
     </div>
     <div class="btn-row">
       <button class="btn btn-primary" onclick="saveAndShare()">약속 공유하기</button>
@@ -365,6 +547,8 @@
 <script>
   let selectedTime = null;
   let selectedMenu = null;
+  let selectedPlace = null;
+  let selectedName = null;
 
   function goTo(id){
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -535,6 +719,8 @@
   window.addEventListener('load', updateDday);
   window.addEventListener('load', renderMascots);
   window.addEventListener('load', placeDieBtnInitial);
+  window.addEventListener('load', loadRestaurants);
+  window.addEventListener('load', loadVisitedPlaces);
 
   function selectTime(btn){
     document.querySelectorAll('.time-options .option-btn').forEach(b => b.classList.remove('selected'));
@@ -564,29 +750,310 @@
     }
   }
 
-  function selectCustomMenu(){
-    const input = document.getElementById('customMenuInput');
-    const val = input.value.trim();
-    if(!val){
-      alert('뭐 먹고 싶은지 적어줘!');
+  const SUPABASE_URL = 'https://rtvbeyexpghzlawdgyeo.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0dmJleWV4cGdoemxhd2RneWVvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM3NDkyNDksImV4cCI6MjA5OTMyNTI0OX0.oF__O7UCqKJJl7P2onBVdCgrsRJvWcLwIEjqAU1m1wE';
+  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  let restaurantCategories = {}; // { 카테고리: [음식점, ...] }
+  let visitedPlaces = new Set();
+
+  async function loadVisitedPlaces(){
+    const { data, error } = await supabaseClient
+      .from('promises')
+      .select('place');
+
+    if(error){
+      console.error('방문 기록 불러오기 실패:', error);
       return;
     }
-    selectMenu(val);
+    visitedPlaces = new Set(data.map(row => row.place));
   }
 
-  function selectMenu(menu){
-    selectedMenu = menu;
+  async function loadRestaurants(){
+    const listEl = document.getElementById('placeCategoryList');
+    const { data, error } = await supabaseClient
+      .from('restaurants')
+      .select('category, name')
+      .order('created_at', { ascending: true });
+
+    if(error){
+      listEl.innerHTML = '<span class="place-empty">목록을 불러오지 못했어 ㅠㅠ</span>';
+      console.error(error);
+      return;
+    }
+
+    restaurantCategories = {};
+    data.forEach(row => {
+      if(!restaurantCategories[row.category]) restaurantCategories[row.category] = [];
+      restaurantCategories[row.category].push(row.name);
+    });
+
+    renderCategoryButtons();
+  }
+
+  function renderCategoryButtons(){
+    const listEl = document.getElementById('placeCategoryList');
+    listEl.innerHTML = '';
+    const categories = Object.keys(restaurantCategories);
+
+    if(categories.length === 0){
+      listEl.innerHTML = '<span class="place-empty">아직 등록된 카테고리가 없어. 아래에서 추가해줘!</span>';
+      return;
+    }
+
+    categories.forEach(category => {
+      const btn = document.createElement('button');
+      btn.className = 'option-btn';
+      btn.textContent = `#${category}`;
+      btn.onclick = () => showRestaurantList(category);
+      listEl.appendChild(btn);
+    });
+  }
+
+  function showRestaurantList(category){
+    selectedMenu = category;
+    document.getElementById('placeCategoryList').classList.add('hidden');
+    document.getElementById('restaurantListWrap').classList.remove('hidden');
+    document.getElementById('confirmPlaceBtn').classList.add('hidden');
+    document.getElementById('placeStepTitle').innerHTML = `#${category}, 뭐 먹을까?`;
+    document.getElementById('placeStepDesc').textContent = '음식점을 눌러서 카카오맵으로 위치를 확인해봐!';
+
+    const list = document.getElementById('restaurantList');
+    list.innerHTML = '';
+    restaurantCategories[category].forEach(name => {
+      const item = document.createElement('div');
+      item.className = 'place-result-item';
+      const visitedBadge = visitedPlaces.has(name) ? ' <span class="visited-badge">✅ 다녀옴</span>' : '';
+      item.innerHTML = `<div class="place-result-name">${name}${visitedBadge}</div><div class="place-result-address">눌러서 위치 확인하기 📍</div>`;
+      item.onclick = () => choosePlace(name, item);
+      list.appendChild(item);
+    });
+  }
+
+  function showCategoryList(){
+    document.getElementById('placeCategoryList').classList.remove('hidden');
+    document.getElementById('restaurantListWrap').classList.add('hidden');
+    document.getElementById('confirmPlaceBtn').classList.add('hidden');
+    document.getElementById('placeStepTitle').innerHTML = '뭐 먹을지 골랐으니,<br>어디서 먹을까?';
+    document.getElementById('placeStepDesc').textContent = '카테고리를 골라줘!';
+    selectedPlace = null;
+    selectedMenu = null;
+  }
+
+  function choosePlace(name, itemEl){
+    selectedPlace = name;
+    document.querySelectorAll('#restaurantList .place-result-item').forEach(el => el.classList.remove('selected-place'));
+    itemEl.classList.add('selected-place');
+    document.getElementById('confirmPlaceBtn').classList.remove('hidden');
+    window.open(`https://map.kakao.com/link/search/${encodeURIComponent(name)}`, '_blank');
+  }
+
+  function confirmPlace(){
+    askNameAndFinish();
+  }
+
+  function skipPlace(){
+    selectedPlace = null;
+    if(!selectedMenu) selectedMenu = '아무거나';
+    askNameAndFinish();
+  }
+
+  function askNameAndFinish(){
+    const input = prompt('마지막으로, 이 약속을 정한 사람 이름을 알려줘!');
+    selectedName = (input && input.trim()) ? input.trim() : '익명';
     fillCard();
+    savePromise();
     goTo('screen5');
   }
+
+  async function savePromise(){
+    const name = document.getElementById('cardName').textContent;
+    const date_text = document.getElementById('cardDate').textContent;
+    const time_slot = document.getElementById('cardTime').textContent;
+    const menu = document.getElementById('cardMenu').textContent;
+    const place = document.getElementById('cardPlace').textContent;
+
+    const { error } = await supabaseClient
+      .from('promises')
+      .insert([{ name, date_text, time_slot, menu, place }]);
+
+    if(error){
+      console.error('약속 저장 실패:', error);
+      alert('약속 저장에 실패했어 ㅠㅠ (' + error.message + ')');
+    } else {
+      await loadVisitedPlaces();
+    }
+  }
+
+  async function loadArchive(){
+    const listEl = document.getElementById('archiveList');
+    const rankingEl = document.getElementById('rankingBox');
+    listEl.innerHTML = '<div class="place-empty">불러오는 중...</div>';
+    rankingEl.classList.add('hidden');
+
+    const { data, error } = await supabaseClient
+      .from('promises')
+      .select('id, name, date_text, time_slot, menu, place, review, participants, created_at')
+      .order('created_at', { ascending: false });
+
+    if(error){
+      listEl.innerHTML = '<div class="place-empty">불러오지 못했어 ㅠㅠ</div>';
+      console.error(error);
+      return;
+    }
+
+    if(data.length === 0){
+      listEl.innerHTML = '<div class="place-empty">아직 저장된 약속이 없어!</div>';
+      return;
+    }
+
+    // 약속왕 랭킹 계산
+    const counts = {};
+    data.forEach(p => {
+      const n = p.name || '익명';
+      counts[n] = (counts[n] || 0) + 1;
+    });
+    const ranked = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 3);
+    const medals = ['🥇', '🥈', '🥉'];
+    rankingEl.innerHTML = `
+      <div class="ranking-title">이번 인턴 약속왕 🏆</div>
+      ${ranked.map((row, i) => `<div class="ranking-row"><span>${medals[i] || '🎖️'} ${row[0]}</span><span>${row[1]}번</span></div>`).join('')}
+    `;
+    rankingEl.classList.remove('hidden');
+
+    listEl.innerHTML = '';
+    data.forEach(p => {
+      const card = document.createElement('div');
+      card.className = 'archive-card';
+      card.id = `promise-${p.id}`;
+
+      const participants = p.participants || [];
+      const participantsHtml = participants.length > 0
+        ? `<div class="participants-row">🙋 함께하는 사람: ${participants.join(', ')}</div>`
+        : `<div class="participants-row participants-empty">아직 참여자가 없어</div>`;
+
+      card.innerHTML = `
+        <div class="archive-card-title">💕 ${p.date_text}</div>
+        <div class="archive-card-row"><span class="card-label">이름</span><span class="card-value">${p.name || '익명'}</span></div>
+        <div class="archive-card-row"><span class="card-label">시간</span><span class="card-value">${p.time_slot}</span></div>
+        <div class="archive-card-row"><span class="card-label">메뉴</span><span class="card-value">${p.menu}</span></div>
+        <div class="archive-card-row"><span class="card-label">장소</span><span class="card-value">${p.place}</span></div>
+        ${participantsHtml}
+        <button class="btn btn-primary join-btn" onclick="joinPromise(${p.id})">나도 갈래! 🙋</button>
+        <button class="btn btn-ghost share-btn" onclick="sharePromiseLink(${p.id})">이 약속 공유하기 🔗</button>
+        <button class="btn btn-ghost cancel-btn" onclick="cancelPromise(${p.id})">이 약속 취소하기</button>
+      `;
+      listEl.appendChild(card);
+    });
+  }
+
+  function sharePromiseLink(id){
+    const url = `${window.location.origin}${window.location.pathname}?promise=${id}`;
+
+    if(navigator.share){
+      navigator.share({ title: '우리의 밥 약속', text: '이 약속에 같이 갈래?', url }).catch(() => {});
+      return;
+    }
+
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(url).then(() => {
+        alert('링크가 복사됐어! 친구들한테 붙여넣기 해서 보내줘 📋');
+      }).catch(() => {
+        prompt('아래 링크를 복사해서 보내줘!', url);
+      });
+      return;
+    }
+
+    prompt('아래 링크를 복사해서 보내줘!', url);
+  }
+
+  function checkSharedPromiseLink(){
+    const params = new URLSearchParams(window.location.search);
+    const promiseId = params.get('promise');
+    if(!promiseId) return;
+
+    goTo('screenArchive');
+    loadArchive().then(() => {
+      const card = document.getElementById('promise-' + promiseId);
+      if(card){
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        card.classList.add('highlighted-card');
+        setTimeout(() => card.classList.remove('highlighted-card'), 3000);
+      }
+    });
+  }
+
+  window.addEventListener('load', checkSharedPromiseLink);
+
+  async function cancelPromise(id){
+    const sure = confirm('이 약속을 정말 취소할까? 되돌릴 수 없어!');
+    if(!sure) return;
+
+    const { error } = await supabaseClient
+      .from('promises')
+      .delete()
+      .eq('id', id);
+
+    if(error){
+      alert('취소에 실패했어 ㅠㅠ (' + error.message + ')');
+      console.error(error);
+      return;
+    }
+
+    await loadArchive();
+    await loadVisitedPlaces();
+    alert('약속이 취소됐어.');
+  }
+
+  async function joinPromise(id){
+    const input = prompt('이름을 알려줘! 이 약속에 참여할게요 🙋');
+    const name = (input && input.trim()) ? input.trim() : null;
+    if(!name) return;
+
+    const { data: current, error: fetchError } = await supabaseClient
+      .from('promises')
+      .select('participants')
+      .eq('id', id)
+      .single();
+
+    if(fetchError){
+      alert('참여 처리에 실패했어 ㅠㅠ');
+      console.error(fetchError);
+      return;
+    }
+
+    const arr = current.participants || [];
+    if(arr.includes(name)){
+      alert('이미 참여하고 있어!');
+      return;
+    }
+    arr.push(name);
+
+    const { error: updateError } = await supabaseClient
+      .from('promises')
+      .update({ participants: arr })
+      .eq('id', id);
+
+    if(updateError){
+      alert('참여 처리에 실패했어 ㅠㅠ (' + updateError.message + ')');
+      console.error(updateError);
+      return;
+    }
+
+    await loadArchive();
+    alert('참여 완료! 재밌게 다녀와 💕');
+  }
+
 
   function fillCard(){
     const dateVal = document.getElementById('dateInput').value;
     const d = new Date(dateVal + 'T00:00:00');
     const dateText = `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일 (${days[d.getDay()]})`;
+    document.getElementById('cardName').textContent = selectedName || '익명';
     document.getElementById('cardDate').textContent = dateText;
     document.getElementById('cardTime').textContent = selectedTime;
     document.getElementById('cardMenu').textContent = selectedMenu;
+    document.getElementById('cardPlace').textContent = selectedPlace ? selectedPlace : '나중에 정하자 ♡';
   }
 
   async function saveAndShare(){
@@ -622,6 +1089,11 @@
     document.getElementById('confirmDateBtn').disabled = true;
     selectedTime = null;
     selectedMenu = null;
+    selectedPlace = null;
+    selectedName = null;
+    showCategoryList();
+    const restaurantList = document.getElementById('restaurantList');
+    if(restaurantList) restaurantList.innerHTML = '';
     goTo('screen1');
     placeDieBtnInitial();
   }
