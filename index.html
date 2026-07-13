@@ -243,6 +243,31 @@
     padding:10px 14px;
     cursor:pointer;
     transition:all 0.15s ease;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+  }
+  .place-result-main{
+    flex:1;
+    min-width:0;
+  }
+  .map-check-btn{
+    flex-shrink:0;
+    background:#fff0f3;
+    border:2px solid var(--pink-mid);
+    color:var(--pink-deep);
+    font-size:0.72rem;
+    font-weight:700;
+    padding:6px 10px;
+    border-radius:999px;
+    cursor:pointer;
+    white-space:nowrap;
+    font-family:inherit;
+  }
+  .map-check-btn:hover{
+    background:var(--pink-mid);
+    color:#fff;
   }
   .place-result-item:hover{
     background:#fdeef1;
@@ -816,7 +841,7 @@
     document.getElementById('restaurantListWrap').classList.remove('hidden');
     document.getElementById('confirmPlaceBtn').classList.add('hidden');
     document.getElementById('placeStepTitle').innerHTML = `#${category}, 뭐 먹을까?`;
-    document.getElementById('placeStepDesc').textContent = '음식점을 눌러서 카카오맵으로 위치를 확인해봐!';
+    document.getElementById('placeStepDesc').textContent = '음식점을 눌러서 선택하고, 위치가 궁금하면 지도 버튼을 눌러봐!';
 
     const list = document.getElementById('restaurantList');
     list.innerHTML = '';
@@ -824,8 +849,17 @@
       const item = document.createElement('div');
       item.className = 'place-result-item';
       const visitedBadge = visitedPlaces.has(name) ? ' <span class="visited-badge">✅ 다녀옴</span>' : '';
-      item.innerHTML = `<div class="place-result-name">${name}${visitedBadge}</div><div class="place-result-address">눌러서 위치 확인하기 📍</div>`;
+      item.innerHTML = `
+        <div class="place-result-main">
+          <div class="place-result-name">${name}${visitedBadge}</div>
+        </div>
+        <button class="map-check-btn" type="button">위치 확인하기 📍</button>
+      `;
       item.onclick = () => choosePlace(name, item);
+      item.querySelector('.map-check-btn').onclick = (e) => {
+        e.stopPropagation();
+        window.open(`https://map.kakao.com/link/search/${encodeURIComponent(name)}`, '_blank');
+      };
       list.appendChild(item);
     });
   }
@@ -845,7 +879,6 @@
     document.querySelectorAll('#restaurantList .place-result-item').forEach(el => el.classList.remove('selected-place'));
     itemEl.classList.add('selected-place');
     document.getElementById('confirmPlaceBtn').classList.remove('hidden');
-    window.open(`https://map.kakao.com/link/search/${encodeURIComponent(name)}`, '_blank');
   }
 
   function confirmPlace(){
