@@ -988,7 +988,7 @@
     const url = `${window.location.origin}${window.location.pathname}?promise=${id}`;
 
     if(isMobileDevice() && navigator.share){
-      navigator.share({ title: '우리의 밥 약속', text: '이 약속에 같이 갈래?', url }).catch(() => {});
+      navigator.share({ title: '우리의 밥 약속', text: '같이 갈사람?', url }).catch(() => {});
       return;
     }
 
