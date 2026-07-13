@@ -947,10 +947,14 @@
     });
   }
 
+  function isMobileDevice(){
+    return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  }
+
   function sharePromiseLink(id){
     const url = `${window.location.origin}${window.location.pathname}?promise=${id}`;
 
-    if(navigator.share){
+    if(isMobileDevice() && navigator.share){
       navigator.share({ title: '우리의 밥 약속', text: '이 약속에 같이 갈래?', url }).catch(() => {});
       return;
     }
